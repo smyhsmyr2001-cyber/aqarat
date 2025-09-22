@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تعديل بيانات العقار</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap' );
+    body { margin: 0; font-family: 'Cairo', sans-serif; background-color: #f4f6f8; color: #333; }
+    header { background: linear-gradient(135deg, #0a3d62, #3c6382); color: #fff; padding: 20px; text-align: center; }
+    header h1 { margin: 0; font-size: 26px; font-weight: 600; }
+    .user-info { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; color: white; }
+    .user-info button { background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; margin-left: 10px; }
+    .container { padding: 20px; max-width: 900px; margin: 20px auto; }
+    .form-card { background: #fff; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); padding: 25px 30px; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+    .form-group { display: flex; flex-direction: column; }
+    .full-width { grid-column: 1 / -1; }
+    .form-group label { margin-bottom: 8px; font-weight: 600; color: #0a3d62; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-family: 'Cairo', sans-serif; font-size: 16px; box-sizing: border-box; }
+    .form-group textarea { min-height: 120px; resize: vertical; }
+    .form-buttons { display: flex; gap: 15px; margin-top: 30px; grid-column: 1 / -1; }
+    .form-buttons button, .form-buttons a { flex: 1; padding: 12px 20px; border-radius: 8px; text-decoration: none; text-align: center; color: #fff; font-weight: 600; font-size: 16px; cursor: pointer; border: none; transition: background 0.3s ease; }
+    .btn-save { background: #27ae60; }
+    .btn-save:hover { background: #229954; }
+    .btn-cancel { background: #7f8c8d; }
+    .btn-cancel:hover { background: #606b6c; }
+    .message { display: none; margin-top: 20px; padding: 15px; border-radius: 8px; text-align: center; grid-column: 1 / -1; }
+    .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    .loading { background-color: #e7f3ff; color: #0c5460; border: 1px solid #b8daff; }
+  </style>
+</head>
+<body>
+  <div class="user-info" id="userInfo">
+    <span id="userEmail"></span>
+    <button onclick="logoutUser()">تسجيل الخروج</button>
+  </div>
+  
+  <header><h1>تعديل بيانات العقار</h1></header>
+  
+  <div class="container">
+    <div class="form-card">
+      <form id="editLandForm">
+        <div class="form-grid">
+          <div class="form-group"><label for="district">الحي</label><input type="text" id="district" required></div>
+          <div class="form-group"><label for="block">المجاورة</label><input type="text" id="block" required></div>
+          <div class="form-group"><label for="plotNumber">رقم القطعة</label><input type="text" id="plotNumber" required></div>
+          <div class="form-group"><label for="price">السعر</label><input type="number" id="price"></div>
+          <div class="form-group"><label for="area">المساحة (م²)</label><input type="number" id="area" required></div>
+          <div class="form-group"><label for="status">حالة العقار</label><select id="status"><option value="أرض">أرض</option><option value="مبنى">مبنى</option><option value="شقة">شقة</option><option value="مصنع">مصنع</option><option value="أرض مصنع">أرض مصنع</option></select></div>
+          <div class="form-group"><label for="direction">الاتجاه الرئيسي</label><select id="direction"><option value="بحري">بحري</option><option value="قبلي">قبلي</option><option value="شرقي">شرقي</option><option value="غربي">غربي</option></select></div>
+          <div class="form-group"><label for="corner">الناصية</label><select id="corner"><option value="لا">لا</option><option value="نعم">نعم</option></select></div>
+          <div class="form-group full-width"><label for="fourDirections">الاتجاهات الأربعة</label><input type="text" id="fourDirections"></div>
+          <div class="form-group full-width"><label for="ownerInfo">بيانات صاحب القطعة</label><textarea id="ownerInfo"></textarea></div>
+          <div class="form-buttons"><button type="submit" class="btn-save">حفظ التعديلات</button><a href="edit.html" class="btn-cancel">إلغاء</a></div>
+          <div class="message" id="message"></div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Firebase Scripts -->
+  <script type="module" src="firebase-config.js"></script>
+  <script src="firebase-auth.js"></script>
+  <script src="firebase-database.js"></script>
+  
+  <script>
+    let propertyId = null;
+    let propertyToEdit = null;
+    
+    // Check if user is logged in
+    function checkAuth() {
+      if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+        window.location.href = 'index.html';
+        return;
+      }
+      updateUserInfo();
+    }
+    
+    function updateUserInfo() {
+      const userEmail = sessionStorage.getItem('userEmail');
+      if (userEmail) {
+        document.getElementById('userEmail').textContent = userEmail;
+      }
+    }
+    
+    async function logoutUser() {
+      if (window.firebaseAuth) {
+        const result = await window.firebaseAuth.signOutUser();
+        if (result.success) {
+          window.location.href = 'index.html';
+        }
+      }
+    }
+    
+    // Wait for Firebase to initialize
+    function waitForFirebase() {
+      if (window.firebaseDB && window.firebaseAuth) {
+        checkAuth();
+        loadPropertyData();
+      } else {
+        setTimeout(waitForFirebase, 100);
+      }
+    }
+    
+    async function loadPropertyData() {
+      // Get property ID from URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      propertyId = urlParams.get('id');
+      
+      if (!propertyId) {
+        alert('معرف العقار غير موجود!');
+        window.location.href = 'edit.html';
+        return;
+      }
+      
+      try {
+        // Get all properties and find the one to edit
+        const result = await window.firebaseDB.getAllProperties();
+        
+        if (result.success) {
+          propertyToEdit = result.data.find(p => p.id === propertyId);
+          
+          if (!propertyToEdit) {
+            alert('العقار المطلوب غير موجود!');
+            window.location.href = 'edit.html';
+            return;
+          }
+          
+          // Populate form fields
+          document.getElementById('district').value = propertyToEdit.district || '';
+          document.getElementById('block').value = propertyToEdit.block || '';
+          document.getElementById('plotNumber').value = propertyToEdit.plotNumber || '';
+          document.getElementById('price').value = propertyToEdit.price || '';
+          document.getElementById('area').value = propertyToEdit.area || '';
+          document.getElementById('status').value = propertyToEdit.status || 'أرض';
+          document.getElementById('direction').value = propertyToEdit.direction || 'بحري';
+          document.getElementById('corner').value = propertyToEdit.corner || 'لا';
+          document.getElementById('fourDirections').value = propertyToEdit.fourDirections || '';
+          document.getElementById('ownerInfo').value = propertyToEdit.ownerInfo || '';
+        } else {
+          alert('خطأ في تحميل بيانات العقار: ' + result.error);
+          window.location.href = 'edit.html';
+        }
+      } catch (error) {
+        alert('حدث خطأ غير متوقع: ' + error.message);
+        window.location.href = 'edit.html';
+      }
+    }
+    
+    document.getElementById('editLandForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
+      
+      if (!propertyId) {
+        showMessage('خطأ: معرف العقار غير موجود', 'error');
+        return;
+      }
+      
+      // Show loading message
+      showMessage('جاري حفظ التعديلات...', 'loading');
+      
+      const updatedData = {
+        district: document.getElementById('district').value,
+        block: document.getElementById('block').value,
+        plotNumber: document.getElementById('plotNumber').value,
+        price: document.getElementById('price').value,
+        area: document.getElementById('area').value,
+        status: document.getElementById('status').value,
+        direction: document.getElementById('direction').value,
+        corner: document.getElementById('corner').value,
+        fourDirections: document.getElementById('fourDirections').value,
+        ownerInfo: document.getElementById('ownerInfo').value,
+        lastModifiedBy: sessionStorage.getItem('userEmail') || 'مجهول'
+      };
+      
+      try {
+        const result = await window.firebaseDB.updateProperty(propertyId, updatedData);
+        
+        if (result.success) {
+          showMessage('تم حفظ التعديلات بنجاح!', 'success');
+          
+          // Redirect to edit page after 2 seconds
+          setTimeout(() => {
+            window.location.href = 'edit.html';
+          }, 2000);
+        } else {
+          showMessage('خطأ في حفظ التعديلات: ' + result.error, 'error');
+        }
+      } catch (error) {
+        showMessage('حدث خطأ غير متوقع: ' + error.message, 'error');
+      }
+    });
+    
+    function showMessage(text, type) {
+      const messageDiv = document.getElementById('message');
+      messageDiv.textContent = text;
+      messageDiv.className = 'message ' + type;
+      messageDiv.style.display = 'block';
+    }
+    
+    // Initialize when page loads
+    window.onload = waitForFirebase;
+  </script>
+</body>
+</html>
+
