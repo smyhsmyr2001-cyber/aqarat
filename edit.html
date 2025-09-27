@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تعديل العقارات</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to left, #1a237e, #424242);
+      color: white;
+      margin: 0;
+      padding: 40px;
+      text-align: center;
+    }
+    h1 { margin-bottom: 30px; font-size: 32px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px auto;
+      background: rgba(255,255,255,0.05);
+      box-shadow: 0 0 20px rgba(0,0,0,0.4);
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 12px;
+      font-size: 16px;
+    }
+    th { background: #0d47a1; color: white; }
+    tr:nth-child(even) { background: rgba(255,255,255,0.1); }
+    button.edit-btn {
+      padding: 5px 10px;
+      background: #f57c00;
+      border: none;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button.edit-btn:hover { background: #fb8c00; }
+    .form-container {
+      max-width: 1000px;
+      margin: 30px auto;
+      background: rgba(255,255,255,0.05);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.4);
+      text-align: right;
+      display: none;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+    .form-grid label { display: block; margin-bottom: 5px; font-size: 16px; }
+    .form-grid input, .form-grid select, .form-grid textarea {
+      width: 100%; padding: 10px; font-size: 16px; border-radius: 8px; border: none;
+    }
+    textarea { resize: none; }
+    .form-grid button {
+      grid-column: span 2;
+      padding: 15px; font-size: 18px;
+      background: #0d47a1; color: white; border: none; border-radius: 12px; cursor: pointer;
+      margin-top: 20px;
+    }
+    .form-grid button:hover { background: #1565c0; }
+    .back-btn {
+      display: block; width: 100%; max-width: 1000px; margin: 30px auto 0;
+      text-align: center; padding: 20px; font-size: 20px;
+      background: #b71c1c; color: white; border: none; border-radius: 12px;
+      cursor: pointer; text-decoration: none;
+    }
+    .back-btn:hover { background: #d32f2f; }
+  </style>
+</head>
+<body>
+
+<h1>✏️ تعديل العقارات</h1>
+
+<table id="landsTable">
+  <thead>
+    <tr>
+      <th>الحي</th>
+      <th>المجاورة</th>
+      <th>القطعة</th>
+      <th>الحالة</th>
+      <th>السعر</th>
+      <th>الاتجاه</th>
+      <th>ناصية</th>
+      <th>اتجاهات الناصية</th>
+      <th>بيانات العميل</th>
+      <th>تعديل</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<div id="formContainer" class="form-container">
+  <form id="editForm" class="form-grid" onsubmit="saveLand(event)">
+    <div>
+      <label>رقم الحي</label>
+      <input type="text" id="hay" required>
+    </div>
+    <div>
+      <label>رقم المجاورة</label>
+      <input type="text" id="mogawara" required>
+    </div>
+    <div>
+      <label>رقم القطعة</label>
+      <input type="text" id="qetaa" required>
+    </div>
+    <div>
+      <label>الحالة</label>
+      <select id="status">
+        <option>متاحة</option>
+        <option>مباعة</option>
+        <option>محجوزة</option>
+      </select>
+    </div>
+    <div>
+      <label>السعر</label>
+      <input type="text" id="price" required>
+    </div>
+    <div>
+      <label>الاتجاه</label>
+      <select id="direction">
+        <option>شرقي</option>
+        <option>غربي</option>
+        <option>قبلي</option>
+        <option>بحري</option>
+      </select>
+    </div>
+    <div>
+      <label>ناصية</label>
+      <select id="corner">
+        <option>تحتوي</option>
+        <option>لا تحتوي</option>
+      </select>
+    </div>
+    <div>
+      <label>اتجاهات الناصية</label>
+      <input type="text" id="cornerDir">
+    </div>
+    <div style="grid-column: span 2;">
+      <label>بيانات العميل</label>
+      <textarea id="clientData" rows="4"></textarea>
+    </div>
+    <button type="submit">💾 حفظ التعديلات</button>
+  </form>
+</div>
+
+<a href="index.html" class="back-btn">⬅ الرجوع للصفحة الرئيسية</a>
+
+<script>
+const tableBody = document.querySelector("#landsTable tbody");
+let lands = JSON.parse(localStorage.getItem("lands")) || [];
+let editingIndex = null;
+
+function renderTable() {
+  tableBody.innerHTML = "";
+  if(lands.length === 0){
+    tableBody.innerHTML = `<tr><td colspan="10">❌ لا توجد عقارات محفوظة</td></tr>`;
+    return;
+  }
+  lands.forEach((land, idx) => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${land.hay}</td>
+      <td>${land.mogawara}</td>
+      <td>${land.qetaa}</td>
+      <td>${land.status}</td>
+      <td>${land.price}</td>
+      <td>${land.direction}</td>
+      <td>${land.corner}</td>
+      <td>${land.cornerDir}</td>
+      <td>${land.clientData}</td>
+      <td><button class="edit-btn" onclick="editLand(${idx})">✏ تعديل</button></td>
+    `;
+    tableBody.appendChild(row);
+  });
+}
+
+function editLand(idx) {
+  const land = lands[idx];
+  editingIndex = idx;
+  document.getElementById("formContainer").style.display = "block";
+  document.getElementById("hay").value = land.hay;
+  document.getElementById("mogawara").value = land.mogawara;
+  document.getElementById("qetaa").value = land.qetaa;
+  document.getElementById("status").value = land.status;
+  document.getElementById("price").value = land.price;
+  document.getElementById("direction").value = land.direction;
+  document.getElementById("corner").value = land.corner;
+  document.getElementById("cornerDir").value = land.cornerDir;
+  document.getElementById("clientData").value = land.clientData;
+}
+
+function saveLand(event) {
+  event.preventDefault();
+  if(editingIndex === null) return;
+  lands[editingIndex] = {
+    hay: document.getElementById("hay").value,
+    mogawara: document.getElementById("mogawara").value,
+    qetaa: document.getElementById("qetaa").value,
+    status: document.getElementById("status").value,
+    price: document.getElementById("price").value,
+    direction: document.getElementById("direction").value,
+    corner: document.getElementById("corner").value,
+    cornerDir: document.getElementById("cornerDir").value,
+    clientData: document.getElementById("clientData").value
+  };
+  localStorage.setItem("lands", JSON.stringify(lands));
+  alert("✅ تم حفظ التعديلات بنجاح");
+  document.getElementById("formContainer").style.display = "none";
+  renderTable();
+}
+
+renderTable();
+</script>
+
+</body>
+</html>

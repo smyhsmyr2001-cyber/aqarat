@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>بحث</title>
+  <style>
+    body { font-family: Tahoma; background:#f9f9f9; padding:20px; }
+    input,button { padding:10px; margin:5px; border-radius:5px; }
+    button { background:#003366; color:white; border:none; cursor:pointer; }
+    table { width:100%; border-collapse: collapse; margin-top:20px; }
+    th,td { border:1px solid #ccc; padding:10px; text-align:center; }
+  </style>
+</head>
+<body>
+  <h2>🔍 بحث عن عقار</h2>
+  <input type="text" id="searchVal" placeholder="اكتب رقم الحي أو المجاورة أو القطعة">
+  <button onclick="search()">بحث</button>
+  <table id="results"><tr><th>الحي</th><th>المجاورة</th><th>القطعة</th><th>الحالة</th><th>السعر</th><th>الاتجاه</th><th>ناصية</th><th>العميل</th></tr></table>
+  <script>
+    function search(){
+      let val=document.getElementById("searchVal").value;
+      let data=JSON.parse(localStorage.getItem("properties"))||[];
+      let table=document.getElementById("results");
+      table.innerHTML='<tr><th>الحي</th><th>المجاورة</th><th>القطعة</th><th>الحالة</th><th>السعر</th><th>الاتجاه</th><th>ناصية</th><th>العميل</th></tr>';
+      data.filter(p=>p.hay===val||p.mogawra===val||p.qetaa===val).forEach(p=>{
+        table.innerHTML+=`<tr><td>${p.hay}</td><td>${p.mogawra}</td><td>${p.qetaa}</td><td>${p.status}</td><td>${p.price}</td><td>${p.direction}</td><td>${p.corner}</td><td>${p.client}</td></tr>`;
+      });
+    }
+  </script>
+</body>
+</html>
