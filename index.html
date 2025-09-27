@@ -5,23 +5,62 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>أوطان العقارية - الرئيسية</title>
   <style>
-    body { font-family: Arial; background: linear-gradient(to left, #1a237e, #424242); color: white; margin:0; padding:40px; text-align:center; }
-    h1 { font-size: 48px; text-shadow: 2px 2px 6px rgba(0,0,0,0.5); }
-    .btn { display:inline-block; padding:20px 30px; margin: 15px; font-size:20px; background:#0d47a1; color:white; border-radius:12px; text-decoration:none; cursor:pointer; transition:0.3s; }
-    .btn:hover { background:#1565c0; transform: scale(1.05); }
-    .logout { background:#b71c1c; }
-    .logout:hover { background:#d32f2f; }
+    body {
+      font-family: Arial; 
+      background: linear-gradient(to left, #1a237e, #424242); 
+      color: white; 
+      margin: 0; 
+      padding: 40px; 
+      text-align: center;
+    }
+    h1 {
+      font-size: 48px; 
+      text-shadow: 2px 2px 6px rgba(0,0,0,0.5);
+      margin-bottom: 50px;
+    }
+    .btn-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 30px;
+      max-width: 1000px;
+      margin: auto;
+    }
+    a.btn {
+      display: block;
+      padding: 25px;
+      font-size: 22px;
+      font-weight: bold;
+      color: white;
+      border-radius: 15px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: 0.3s;
+      box-shadow: 0 0 12px rgba(0,0,0,0.5);
+    }
+    a.btn:hover { transform: scale(1.05); }
+
+    /* ألوان الأزرار */
+    .add-btn { background: #1565c0; }       /* أزرق */
+    .search-btn { background: #2e7d32; }    /* أخضر */
+    .view-btn { background: #6a1b9a; }      /* بنفسجي */
+    .edit-btn { background: #f57c00; }      /* برتقالي */
+    .delete-btn { background: #b71c1c; }    /* أحمر */
+    .password-btn { background: #616161; }  /* رصاصي */
+    .logout-btn { background: #c62828; }    /* أحمر غامق */
   </style>
 </head>
 <body>
 
 <h1>أوطان العقارية</h1>
 
-<div>
-  <a href="add.html" class="btn">➕ إضافة</a>
-  <a href="view.html" class="btn">📋 عرض</a>
-  <a href="edit.html" class="btn">✏ تعديل</a>
-  <a href="login.html" class="btn logout" onclick="logout()">🚪 تسجيل الخروج</a>
+<div class="btn-container">
+  <a href="add.html" class="btn add-btn">➕ إضافة</a>
+  <a href="search.html" class="btn search-btn">🔍 بحث</a>
+  <a href="view.html" class="btn view-btn">📋 عرض</a>
+  <a href="edit.html" class="btn edit-btn">✏ تعديل</a>
+  <a href="delete.html" class="btn delete-btn">🗑 حذف</a>
+  <a href="password.html" class="btn password-btn">🔑 تغيير كلمة المرور</a>
+  <a href="login.html" class="btn logout-btn" onclick="logout()">🚪 تسجيل الخروج</a>
 </div>
 
 <script>
