@@ -3,43 +3,54 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>أوطان العقارية - الرئيسية</title>
+  <title>أوطان العقارية</title>
   <style>
     body {
-      font-family: Arial; 
-      background: linear-gradient(to left, #1a237e, #424242); 
-      color: white; 
-      margin: 0; 
-      padding: 40px; 
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to left, #1a237e, #424242);
+      color: white;
+      margin: 0;
+      padding: 40px;
       text-align: center;
     }
-    h1 {
-      font-size: 48px; 
-      text-shadow: 2px 2px 6px rgba(0,0,0,0.5);
+    .header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       margin-bottom: 50px;
+    }
+    .header img {
+      max-width: 150px;
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-size: 50px;
+      margin: 0;
+      text-shadow: 2px 2px 8px rgba(0,0,0,0.6);
     }
     .btn-container {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 30px;
+      gap: 20px;
       max-width: 1000px;
       margin: auto;
     }
-    a.btn {
+    a, button {
       display: block;
       padding: 25px;
       font-size: 22px;
       font-weight: bold;
       color: white;
+      border: none;
       border-radius: 15px;
       cursor: pointer;
       text-decoration: none;
       transition: 0.3s;
       box-shadow: 0 0 12px rgba(0,0,0,0.5);
     }
-    a.btn:hover { transform: scale(1.05); }
-
-    /* ألوان الأزرار */
+    a:hover, button:hover {
+      transform: scale(1.05);
+    }
     .add-btn { background: #1565c0; }       /* أزرق */
     .search-btn { background: #2e7d32; }    /* أخضر */
     .view-btn { background: #6a1b9a; }      /* بنفسجي */
@@ -47,33 +58,95 @@
     .delete-btn { background: #b71c1c; }    /* أحمر */
     .password-btn { background: #616161; }  /* رصاصي */
     .logout-btn { background: #c62828; }    /* أحمر غامق */
+    #passwordForm input {
+      width: 90%;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: none;
+      font-size: 16px;
+    }
+    #passwordForm button {
+      width: 50%;
+      padding: 15px;
+      margin-top: 10px;
+      background: #0d47a1;
+    }
+    #passwordForm .msg {
+      margin-top: 10px;
+      font-size: 16px;
+    }
   </style>
 </head>
 <body>
+  <div class="header">
+    <img src="logo.png" alt="شعار أوطان العقارية">
+    <h1>أوطان العقارية</h1>
+  </div>
 
-<h1>أوطان العقارية</h1>
+  <div class="btn-container">
+    <a href="add.html" class="add-btn">➕ إضافة</a>
+    <a href="search.html" class="search-btn">🔍 بحث</a>
+    <a href="view.html" class="view-btn">📋 عرض</a>
+    <a href="edit.html" class="edit-btn">✏ تعديل</a>
+    <a href="delete.html" class="delete-btn">🗑 حذف</a>
+    <a href="javascript:void(0)" class="password-btn" onclick="togglePasswordForm()">🔑 تغيير كلمة المرور</a>
+    <a href="login.html" class="logout-btn">🚪 تسجيل الخروج</a>
+  </div>
 
-<div class="btn-container">
-  <a href="add.html" class="btn add-btn">➕ إضافة</a>
-  <a href="search.html" class="btn search-btn">🔍 بحث</a>
-  <a href="view.html" class="btn view-btn">📋 عرض</a>
-  <a href="edit.html" class="btn edit-btn">✏ تعديل</a>
-  <a href="delete.html" class="btn delete-btn">🗑 حذف</a>
-  <a href="password.html" class="btn password-btn">🔑 تغيير كلمة المرور</a>
-  <a href="login.html" class="btn logout-btn" onclick="logout()">🚪 تسجيل الخروج</a>
-</div>
+  <!-- نموذج تغيير كلمة المرور -->
+  <div id="passwordForm" style="display:none; margin-top:30px;">
+    <input type="text" id="username" placeholder="اسم المستخدم"><br>
+    <input type="password" id="currentPass" placeholder="كلمة المرور الحالية"><br>
+    <input type="password" id="newPass" placeholder="كلمة المرور الجديدة"><br>
+    <input type="password" id="confirmPass" placeholder="تأكيد كلمة المرور"><br>
+    <button onclick="changePassword()">حفظ التغيير</button>
+    <div class="msg" id="msg"></div>
+  </div>
 
-<script>
-  // حماية الصفحة: لو مش مسجل دخول يرجع للـ Login
-  const loggedInUser = localStorage.getItem("loggedInUser");
-  if(!loggedInUser) { window.location.href = "login.html"; }
+  <script>
+    function togglePasswordForm() {
+      const form = document.getElementById("passwordForm");
+      form.style.display = form.style.display === "none" ? "block" : "none";
+    }
 
-  // تسجيل الخروج
-  function logout() {
-    localStorage.removeItem("loggedInUser");
-    window.location.href = "login.html";
-  }
-</script>
+    function changePassword() {
+      const user = document.getElementById("username").value;
+      const current = document.getElementById("currentPass").value;
+      const newP = document.getElementById("newPass").value;
+      const confirm = document.getElementById("confirmPass").value;
+      const msg = document.getElementById("msg");
 
+      const storedUser = localStorage.getItem("user");
+      const storedPass = localStorage.getItem("pass");
+
+      if(!user || !current || !newP || !confirm) {
+        msg.style.color = "red";
+        msg.textContent = "❌ من فضلك أكمل كل الحقول";
+        return;
+      }
+
+      if(user !== storedUser || current !== storedPass) {
+        msg.style.color = "red";
+        msg.textContent = "❌ اسم المستخدم أو كلمة المرور الحالية غير صحيحة";
+        return;
+      }
+
+      if(newP !== confirm) {
+        msg.style.color = "red";
+        msg.textContent = "❌ كلمة المرور الجديدة وتأكيدها غير متطابقين";
+        return;
+      }
+
+      // تغيير كلمة المرور
+      localStorage.setItem("pass", newP);
+      msg.style.color = "green";
+      msg.textContent = "✅ تم تغيير كلمة المرور بنجاح";
+
+      document.getElementById("currentPass").value = "";
+      document.getElementById("newPass").value = "";
+      document.getElementById("confirmPass").value = "";
+    }
+  </script>
 </body>
 </html>
