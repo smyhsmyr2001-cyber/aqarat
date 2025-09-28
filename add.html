@@ -158,6 +158,11 @@
         <input id="agentName" type="text" placeholder="اكتب اسم الوسيط">
       </div>
 
+      <div>
+        <label>رفع صورة العقار</label>
+        <input id="propertyImage" type="file" accept="image/*">
+      </div>
+
       <div style="grid-column: span 2;">
         <label>بيانات العميل</label>
         <textarea id="clientData" rows="4" placeholder="الاسم - رقم الهاتف - تفاصيل أخرى"></textarea>
@@ -176,31 +181,38 @@
     form.addEventListener("submit", function(e) {
       e.preventDefault();
 
-      const land = {
-        hay: document.getElementById("hay").value,
-        mogawara: document.getElementById("mogawara").value,
-        qetaa: document.getElementById("qetaa").value,
-        area: document.getElementById("area").value,
-        status: document.getElementById("status").value,
-        price: document.getElementById("price").value,
-        direction: document.getElementById("direction").value,
-        corner: document.getElementById("corner").value,
-        cornerDir: document.getElementById("cornerDir").value,
-        agentName: document.getElementById("agentName").value,
-        clientData: document.getElementById("clientData").value
+      const fileInput = document.getElementById("propertyImage");
+      const reader = new FileReader();
+
+      reader.onload = function() {
+        const land = {
+          hay: document.getElementById("hay").value,
+          mogawara: document.getElementById("mogawara").value,
+          qetaa: document.getElementById("qetaa").value,
+          area: document.getElementById("area").value,
+          status: document.getElementById("status").value,
+          price: document.getElementById("price").value,
+          direction: document.getElementById("direction").value,
+          corner: document.getElementById("corner").value,
+          cornerDir: document.getElementById("cornerDir").value,
+          agentName: document.getElementById("agentName").value,
+          clientData: document.getElementById("clientData").value,
+          image: reader.result  // تخزين الصورة كـ Base64
+        };
+
+        let lands = JSON.parse(localStorage.getItem("lands")) || [];
+        lands.push(land);
+        localStorage.setItem("lands", JSON.stringify(lands));
+
+        alert("✅ تم حفظ البيانات بنجاح!");
+        form.reset();
       };
 
-      // استرجاع البيانات القديمة
-      let lands = JSON.parse(localStorage.getItem("lands")) || [];
-
-      // إضافة الجديد
-      lands.push(land);
-
-      // حفظ في localStorage
-      localStorage.setItem("lands", JSON.stringify(lands));
-
-      alert("✅ تم حفظ البيانات بنجاح!");
-      form.reset();
+      if(fileInput.files.length > 0){
+        reader.readAsDataURL(fileInput.files[0]);
+      } else {
+        reader.onload(); // بدون صورة
+      }
     });
   </script>
 </body>
