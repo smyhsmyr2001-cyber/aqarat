@@ -66,11 +66,13 @@
         <th>الحي</th>
         <th>المجاورة</th>
         <th>القطعة</th>
-        <th>الحالة</th>
+        <th>المساحة</th>
+        <th>النوع</th>
         <th>السعر</th>
         <th>الاتجاه</th>
         <th>ناصية</th>
         <th>اتجاهات الناصية</th>
+        <th>اسم الوسيط</th>
         <th>بيانات العميل</th>
       </tr>
     </thead>
@@ -89,7 +91,7 @@
     const lands = JSON.parse(localStorage.getItem("lands")) || [];
 
     if (lands.length === 0) {
-      tableBody.innerHTML = `<tr><td colspan="9">❌ لا توجد عقارات محفوظة</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="11">❌ لا توجد عقارات محفوظة</td></tr>`;
     } else {
       lands.forEach(land => {
         const row = `
@@ -97,11 +99,13 @@
             <td>${land.hay}</td>
             <td>${land.mogawara}</td>
             <td>${land.qetaa}</td>
+            <td>${land.area || "-"}</td>
             <td>${land.status}</td>
             <td>${land.price}</td>
             <td>${land.direction}</td>
             <td>${land.corner}</td>
             <td>${land.cornerDir}</td>
+            <td>${land.agent || "-"}</td>
             <td>${land.clientData}</td>
           </tr>
         `;
