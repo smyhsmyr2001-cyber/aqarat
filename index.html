@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>أوطان العقارية</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to left, #1a237e, #424242);
+      color: white;
+      margin: 0;
+      padding: 40px;
+      text-align: center;
+    }
+    .header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    .header img {
+      max-width: 150px;
+      margin-bottom: 15px;
+    }
+    h1 {
+      font-size: 40px;
+      margin: 0;
+      text-shadow: 2px 2px 8px rgba(0,0,0,0.6);
+    }
+    .form-container {
+      max-width: 400px;
+      margin: auto;
+      background: rgba(0,0,0,0.4);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    }
+    input {
+      width: 90%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: none;
+      font-size: 16px;
+    }
+    button {
+      padding: 15px;
+      margin: 10px;
+      border: none;
+      border-radius: 10px;
+      font-size: 18px;
+      cursor: pointer;
+      transition: 0.3s;
+      width: 90%;
+    }
+    button:hover {
+      transform: scale(1.05);
+    }
+    .login-btn { background: #1565c0; color: white; }
+    .register-btn { background: #2e7d32; color: white; }
+    .back-btn { background: #757575; color: white; }
+
+    .btn-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      max-width: 900px;
+      margin: auto;
+    }
+    a {
+      display: block;
+      padding: 25px;
+      font-size: 20px;
+      font-weight: bold;
+      color: white;
+      border-radius: 15px;
+      text-decoration: none;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      transition: 0.3s;
+    }
+    a:hover { transform: scale(1.05); }
+    .add-btn { background: #1565c0; }
+    .search-btn { background: #2e7d32; }
+    .view-btn { background: #6a1b9a; }
+    .edit-btn { background: #f57c00; }
+    .delete-btn { background: #b71c1c; }
+    .password-btn { background: #616161; }
+    .logout-btn { background: #c62828; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <img src="logo.png" alt="شعار أوطان العقارية">
+    <h1>أوطان العقارية</h1>
+  </div>
+
+  <!-- تسجيل الدخول -->
+  <div id="loginSection" class="form-container">
+    <h2>تسجيل الدخول</h2>
+    <input type="text" id="loginUser" placeholder="اسم المستخدم">
+    <input type="password" id="loginPass" placeholder="كلمة المرور">
+    <button class="login-btn" onclick="login()">دخول</button>
+    <button class="register-btn" onclick="showRegister()">إنشاء حساب جديد</button>
+  </div>
+
+  <!-- إنشاء حساب -->
+  <div id="registerSection" class="form-container" style="display:none;">
+    <h2>إنشاء حساب</h2>
+    <input type="text" id="newUser" placeholder="اسم المستخدم الجديد">
+    <input type="password" id="newPass" placeholder="كلمة المرور الجديدة">
+    <button class="register-btn" onclick="register()">تسجيل</button>
+    <button class="back-btn" onclick="showLogin()">⬅ رجوع</button>
+  </div>
+
+  <!-- لوحة التحكم -->
+  <div id="dashboard" style="display:none;">
+    <div class="btn-container">
+      <a href="add.html" class="add-btn">➕ إضافة</a>
+      <a href="search.html" class="search-btn">🔍 بحث</a>
+      <a href="view.html" class="view-btn">📋 عرض</a>
+      <a href="edit.html" class="edit-btn">✏️ تعديل</a>
+      <a href="delete.html" class="delete-btn">🗑️ حذف</a>
+      <a href="password.html" class="password-btn">🔑 تغيير كلمة المرور</a>
+      <a href="#" onclick="logout()" class="logout-btn">🚪 تسجيل الخروج</a>
+    </div>
+  </div>
+
+  <script>
+    // عرض إنشاء حساب
+    function showRegister(){
+      document.getElementById("loginSection").style.display="none";
+      document.getElementById("registerSection").style.display="block";
+    }
+    // رجوع لتسجيل الدخول
+    function showLogin(){
+      document.getElementById("registerSection").style.display="none";
+      document.getElementById("loginSection").style.display="block";
+    }
+
+    // إنشاء حساب جديد
+    function register(){
+      let user=document.getElementById("newUser").value.trim();
+      let pass=document.getElementById("newPass").value.trim();
+      if(user==="" || pass===""){ alert("⚠️ يرجى إدخال بيانات صحيحة"); return; }
+
+      let users=JSON.parse(localStorage.getItem("users"))||[];
+      if(users.find(u=>u.user===user)){
+        alert("⚠️ اسم المستخدم موجود بالفعل");
+        return;
+      }
+      users.push({user:user,pass:pass});
+      localStorage.setItem("users",JSON.stringify(users));
+      alert("✅ تم إنشاء الحساب بنجاح");
+      showLogin();
+    }
+
+    // تسجيل الدخول
+    function login(){
+      let user=document.getElementById("loginUser").value.trim();
+      let pass=document.getElementById("loginPass").value.trim();
+      let users=JSON.parse(localStorage.getItem("users"))||[];
+
+      let found=users.find(u=>u.user===user && u.pass===pass);
+      if(found){
+        localStorage.setItem("loggedIn",user);
+        document.getElementById("loginSection").style.display="none";
+        document.getElementById("dashboard").style.display="block";
+      } else {
+        alert("❌ اسم المستخدم أو كلمة المرور غير صحيحة");
+      }
+    }
+
+    // تسجيل الخروج
+    function logout(){
+      localStorage.removeItem("loggedIn");
+      document.getElementById("dashboard").style.display="none";
+      document.getElementById("loginSection").style.display="block";
+    }
+
+    // التحقق عند التحميل
+    window.onload=function(){
+      if(localStorage.getItem("loggedIn")){
+        document.getElementById("loginSection").style.display="none";
+        document.getElementById("dashboard").style.display="block";
+      }
+    }
+  </script>
+</body>
+</html>
