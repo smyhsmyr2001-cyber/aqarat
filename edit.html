@@ -28,15 +28,17 @@
     }
     th { background: #0d47a1; color: white; }
     tr:nth-child(even) { background: rgba(255,255,255,0.1); }
-    button.edit-btn {
+    button.edit-btn, button.delete-btn {
       padding: 5px 10px;
-      background: #f57c00;
       border: none;
       color: white;
       border-radius: 6px;
       cursor: pointer;
     }
+    button.edit-btn { background: #f57c00; }
     button.edit-btn:hover { background: #fb8c00; }
+    button.delete-btn { background: #b71c1c; }
+    button.delete-btn:hover { background: #d32f2f; }
     .form-container {
       max-width: 1000px;
       margin: 30px auto;
@@ -71,6 +73,7 @@
       cursor: pointer; text-decoration: none;
     }
     .back-btn:hover { background: #d32f2f; }
+    img.thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; }
   </style>
 </head>
 <body>
@@ -83,13 +86,16 @@
       <th>الحي</th>
       <th>المجاورة</th>
       <th>القطعة</th>
-      <th>الحالة</th>
+      <th>نوع العقار</th>
       <th>السعر</th>
       <th>الاتجاه</th>
       <th>ناصية</th>
       <th>اتجاهات الناصية</th>
-      <th>بيانات العميل</th>
-      <th>تعديل</th>
+      <th>الوسيط</th>
+      <th>العميل</th>
+      <th>التاريخ</th>
+      <th>الصورة</th>
+      <th>إجراءات</th>
     </tr>
   </thead>
   <tbody></tbody>
@@ -97,30 +103,22 @@
 
 <div id="formContainer" class="form-container">
   <form id="editForm" class="form-grid" onsubmit="saveLand(event)">
+    <div><label>رقم الحي</label><input type="text" id="hay" required></div>
+    <div><label>رقم المجاورة</label><input type="text" id="mogawara" required></div>
+    <div><label>رقم القطعة</label><input type="text" id="qetaa" required></div>
+
     <div>
-      <label>رقم الحي</label>
-      <input type="text" id="hay" required>
-    </div>
-    <div>
-      <label>رقم المجاورة</label>
-      <input type="text" id="mogawara" required>
-    </div>
-    <div>
-      <label>رقم القطعة</label>
-      <input type="text" id="qetaa" required>
-    </div>
-    <div>
-      <label>الحالة</label>
+      <label>نوع العقار</label>
       <select id="status">
-        <option>متاحة</option>
-        <option>مباعة</option>
-        <option>محجوزة</option>
+        <option>أرض</option>
+        <option>منزل</option>
+        <option>مصنع</option>
+        <option>أرض مصنع</option>
+        <option>شقة</option>
       </select>
     </div>
-    <div>
-      <label>السعر</label>
-      <input type="text" id="price" required>
-    </div>
+
+    <div><label>السعر</label><input type="text" id="price" required></div>
     <div>
       <label>الاتجاه</label>
       <select id="direction">
@@ -137,10 +135,9 @@
         <option>لا تحتوي</option>
       </select>
     </div>
-    <div>
-      <label>اتجاهات الناصية</label>
-      <input type="text" id="cornerDir">
-    </div>
+    <div><label>اتجاهات الناصية</label><input type="text" id="cornerDir"></div>
+    <div><label>اسم الوسيط</label><input type="text" id="agentName"></div>
+    <div><label>تغيير صورة</label><input type="file" id="propertyImage" accept="image/*"></div>
     <div style="grid-column: span 2;">
       <label>بيانات العميل</label>
       <textarea id="clientData" rows="4"></textarea>
@@ -159,10 +156,11 @@ let editingIndex = null;
 function renderTable() {
   tableBody.innerHTML = "";
   if(lands.length === 0){
-    tableBody.innerHTML = `<tr><td colspan="10">❌ لا توجد عقارات محفوظة</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="13">❌ لا توجد عقارات محفوظة</td></tr>`;
     return;
   }
   lands.forEach((land, idx) => {
+    if(!land.date){ land.date = new Date().toLocaleString("ar-EG"); }
     const row = document.createElement("tr");
     row.innerHTML = `
       <td>${land.hay}</td>
@@ -173,8 +171,14 @@ function renderTable() {
       <td>${land.direction}</td>
       <td>${land.corner}</td>
       <td>${land.cornerDir}</td>
+      <td>${land.agentName || ""}</td>
       <td>${land.clientData}</td>
-      <td><button class="edit-btn" onclick="editLand(${idx})">✏ تعديل</button></td>
+      <td>${land.date}</td>
+      <td>${land.image ? `<img src="${land.image}" class="thumb">` : "—"}</td>
+      <td>
+        <button class="edit-btn" onclick="editLand(${idx})">✏ تعديل</button>
+        <button class="delete-btn" onclick="deleteLand(${idx})">🗑 حذف</button>
+      </td>
     `;
     tableBody.appendChild(row);
   });
@@ -192,27 +196,51 @@ function editLand(idx) {
   document.getElementById("direction").value = land.direction;
   document.getElementById("corner").value = land.corner;
   document.getElementById("cornerDir").value = land.cornerDir;
+  document.getElementById("agentName").value = land.agentName || "";
   document.getElementById("clientData").value = land.clientData;
 }
 
 function saveLand(event) {
   event.preventDefault();
   if(editingIndex === null) return;
-  lands[editingIndex] = {
-    hay: document.getElementById("hay").value,
-    mogawara: document.getElementById("mogawara").value,
-    qetaa: document.getElementById("qetaa").value,
-    status: document.getElementById("status").value,
-    price: document.getElementById("price").value,
-    direction: document.getElementById("direction").value,
-    corner: document.getElementById("corner").value,
-    cornerDir: document.getElementById("cornerDir").value,
-    clientData: document.getElementById("clientData").value
+  const fileInput = document.getElementById("propertyImage");
+  const reader = new FileReader();
+
+  reader.onload = function() {
+    lands[editingIndex] = {
+      ...lands[editingIndex], // نحافظ على البيانات القديمة
+      hay: document.getElementById("hay").value,
+      mogawara: document.getElementById("mogawara").value,
+      qetaa: document.getElementById("qetaa").value,
+      status: document.getElementById("status").value,
+      price: document.getElementById("price").value,
+      direction: document.getElementById("direction").value,
+      corner: document.getElementById("corner").value,
+      cornerDir: document.getElementById("cornerDir").value,
+      agentName: document.getElementById("agentName").value,
+      clientData: document.getElementById("clientData").value,
+      date: lands[editingIndex].date || new Date().toLocaleString("ar-EG"),
+      image: fileInput.files.length > 0 ? reader.result : lands[editingIndex].image
+    };
+    localStorage.setItem("lands", JSON.stringify(lands));
+    alert("✅ تم حفظ التعديلات بنجاح");
+    document.getElementById("formContainer").style.display = "none";
+    renderTable();
   };
-  localStorage.setItem("lands", JSON.stringify(lands));
-  alert("✅ تم حفظ التعديلات بنجاح");
-  document.getElementById("formContainer").style.display = "none";
-  renderTable();
+
+  if(fileInput.files.length > 0){
+    reader.readAsDataURL(fileInput.files[0]);
+  } else {
+    reader.onload(); // تحديث بدون صورة جديدة
+  }
+}
+
+function deleteLand(idx) {
+  if(confirm("⚠️ هل أنت متأكد من حذف هذا العقار؟")) {
+    lands.splice(idx, 1);
+    localStorage.setItem("lands", JSON.stringify(lands));
+    renderTable();
+  }
 }
 
 renderTable();
